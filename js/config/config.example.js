@@ -1,6 +1,6 @@
 export const CONFIG = {
     API: {
-        KEY: 'YOUR_API_KEY_FROM_GOOGLE_AI_STUDIO',
+        KEY: 'AIzaSyCqgjiPZNyllunNQ-P9dcwwBDS_hwFNgYI',
         BASE_URL: 'wss://generativelanguage.googleapis.com/ws',
         VERSION: 'v1alpha',
         MODEL_NAME: 'models/gemini-2.0-flash-exp'
@@ -11,12 +11,12 @@ export const CONFIG = {
     },
     // Model's voice
     VOICE: {
-        NAME: 'Aoede' // You can choose one from: Puck, Charon, Kore, Fenrir, Aoede (Kore and Aoede are female voices, rest are male)
+        NAME: 'Fenrir' // You can choose one from: Puck, Charon, Kore, Fenrir, Aoede (Kore and Aoede are female voices, rest are male)
     },
     // Default audio settings
     AUDIO: {
         INPUT_SAMPLE_RATE: 16000,
-        OUTPUT_SAMPLE_RATE: 24000,      // If you want to have fun, set this to around 14000 (u certainly will)
+        OUTPUT_SAMPLE_RATE: 22000,      // If you want to have fun, set this to around 14000 (u certainly will)
         BUFFER_SIZE: 7680,
         CHANNELS: 1
     },
@@ -26,4 +26,4 @@ export const CONFIG = {
     // }
   };
   
-  export default CONFIG; 
+  export default CONFIG;
