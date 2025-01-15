@@ -1,4 +1,4 @@
-qimport { MultimodalLiveClient } from './core/websocket-client.js';
+import { MultimodalLiveClient } from './core/websocket-client.js';
 import { AudioStreamer } from './audio/audio-streamer.js';
 import { AudioRecorder } from './audio/audio-recorder.js';
 import { CONFIG } from './config/config.js';
