@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini 2.0 Flash Multimodal Live API Client</title>
+  <!-- Google Fonts for Material Icons and a modern sans-serif -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" />
+  <style>
+    /*----------------------------------------------------------
+      Theme Variables and Base Styles
+    -----------------------------------------------------------*/
+    :root {
+      --primary-color: #4285f4;
+      --secondary-color: #34a853;
+      --danger-color: #ea4335;
+      --background-color: #f0f0f0;
+      --surface-color: #ffffff;
+      --border-color: #ccc;
+      --text-color: #333;
+      --text-secondary: #666;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --primary-color-rgb: 66, 133, 244;
+      font-family: 'Roboto', sans-serif;
+      color-scheme: light;
+    }
+
+    /* Dark Theme */
+    :root[data-theme="dark"] {
+      --primary-color: #4285f4;
+      --secondary-color: #34a853;
+      --danger-color: #ea4335;
+      --background-color: #1a1a1a;
+      --surface-color: #2d2d2d;
+      --border-color: #404040;
+      --text-color: #e0e0e0;
+      --text-secondary: #a0a0a0;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Reset and Global Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      line-height: 1.5;
+      color: var(--text-color);
+      background-color: var(--background-color);
+      overflow-x: hidden;
+    }
+
+    /*----------------------------------------------------------
+      Layout & Main Container
+    -----------------------------------------------------------*/
+    #app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      min-height: 100vh;
+    }
+
+    /*----------------------------------------------------------
+      Main Controls (Top Bar)
+    -----------------------------------------------------------*/
+    .main-controls {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-color);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    .main-controls button {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border: none;
+      border-radius: var(--border-radius);
+      background-color: var(--secondary-color);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 500;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .main-controls button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow-color);
+    }
+
+    #connect-button.connected {
+      background-color: var(--danger-color);
+    }
+
+    #theme-toggle,
+    #config-toggle {
+      padding: var(--spacing-md);
+      border: none;
+      border-radius: 50%;
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #theme-toggle:hover,
+    #config-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow-color);
+    }
+
+    #config-toggle.active {
+      background-color: var(--danger-color);
+      color: #fff;
+    }
+
+    /*----------------------------------------------------------
+      Configuration Panel
+    -----------------------------------------------------------*/
+    #config-container {
+      background: var(--surface-color);
+      padding: var(--spacing-lg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px var(--shadow-color);
+      display: none;
+      position: relative;
+      z-index: 10;
+    }
+
+    #config-container.active {
+      display: block;
+    }
+
+    .config-wrapper {
+      display: grid;
+      gap: var(--spacing-md);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    select,
+    input,
+    textarea {
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    textarea::placeholder,
+    input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .sample-rate-container {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .sample-rate-help {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    #apply-config {
+      padding: var(--spacing-md);
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #apply-config:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow-color);
+    }
+
+    /* Preset Sets */
+    .preset-sets {
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      background: rgba(var(--primary-color-rgb), 0.1);
+    }
+
+    .preset-sets h3 {
+      margin-bottom: var(--spacing-md);
+      color: var(--text-color);
+      font-size: 1.1em;
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .preset-button {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      background: var(--surface-color);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-align: left;
+    }
+
+    .preset-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow-color);
+      border-color: var(--primary-color);
+    }
+
+    .preset-name {
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    .preset-desc {
+      font-size: 0.9em;
+      color: var(--text-secondary);
+    }
+
+    /*----------------------------------------------------------
+      Chat Interface
+    -----------------------------------------------------------*/
+    .chat-interface {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      flex: 1;
+    }
+
+    /* Chat History Logs */
+    .logs-wrapper {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px var(--shadow-color);
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      border-radius: var(--border-radius);
+    }
+
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-md);
+      background: var(--primary-color);
+      color: #fff;
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+    }
+
+    #logs-container {
+      height: 300px;
+      overflow-y: auto;
+      padding: var(--spacing-md);
+      background: var(--background-color);
+    }
+
+    .log-entry {
+      padding: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+      border-radius: var(--border-radius);
+      font-size: 0.9em;
+      line-height: 1.4;
+    }
+
+    /* Chat bubble styles */
+    .log-entry.system {
+      background: rgba(52, 168, 83, 0.15);
+      color: var(--secondary-color);
+      align-self: flex-start;
+    }
+
+    .log-entry.user {
+      background: rgba(66, 133, 244, 0.15);
+      color: var(--primary-color);
+      align-self: flex-end;
+    }
+
+    .log-entry.ai {
+      background: rgba(234, 67, 53, 0.15);
+      color: var(--danger-color);
+      align-self: center;
+    }
+
+    /*----------------------------------------------------------
+      Input Controls (Bottom Bar)
+    -----------------------------------------------------------*/
+    .input-controls {
+      display: grid;
+      gap: var(--spacing-md);
+      background: var(--surface-color);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    #message-input {
+      width: 100%;
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: var(--spacing-sm);
+      justify-content: center;
+    }
+
+    .action-buttons button {
+      padding: var(--spacing-md);
+      border: none;
+      border-radius: var(--border-radius);
+      background-color: var(--primary-color);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .action-buttons button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow-color);
+    }
+
+    /*----------------------------------------------------------
+      Audio Visualizers
+    -----------------------------------------------------------*/
+    .audio-visualizers {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      margin: var(--spacing-md) 0;
+    }
+
+    .visualizer-container {
+      background: var(--surface-color);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    .visualizer-container label {
+      display: block;
+      margin-bottom: var(--spacing-sm);
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    #input-audio-visualizer,
+    #audio-visualizer {
+      height: 20px;
+      background-color: var(--border-color);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+
+    .audio-bar {
+      height: 100%;
+      background-color: var(--primary-color);
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+
+    #input-audio-visualizer .audio-bar {
+      background-color: var(--secondary-color);
+    }
+
+    /*----------------------------------------------------------
+      Video & Screen Preview Containers
+    -----------------------------------------------------------*/
+    #video-container,
+    #screen-container {
+      position: fixed;
+      background: var(--surface-color);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 480px;
+      height: 360px;
+      transition: all 0.3s ease;
+    }
+
+    #video-container {
+      bottom: 20px;
+      right: 20px;
+    }
+
+    #screen-container {
+      bottom: 20px;
+      left: 20px;
+    }
+
+    .video-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--spacing-md);
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      display: flex;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #video-container:hover .video-controls {
+      opacity: 1;
+    }
+
+    /* Specific styles for screen preview video */
+    #screen-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /*----------------------------------------------------------
+      Responsive Styles
+    -----------------------------------------------------------*/
+    @media (max-width: 768px) {
+      #app {
+        padding: var(--spacing-sm);
+      }
+      .hidden-mobile {
+        display: none;
+      }
+      #config-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        background: var(--surface-color);
+        padding: var(--spacing-lg);
+      }
+      #config-container.active {
+        transform: translateX(0);
+      }
+      .logs-wrapper {
+        max-height: 40vh;
+      }
+      #logs-container {
+        height: auto;
+        max-height: calc(40vh - 50px);
+      }
+      .input-controls {
+        position: sticky;
+        bottom: 0;
+        background: var(--surface-color);
+        padding: var(--spacing-md);
+        box-shadow: 0 -2px 8px var(--shadow-color);
+        z-index: 100;
+      }
+      .action-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      #video-container,
+      #screen-container {
+        width: 100%;
+        height: 50vh;
+        bottom: 0;
+      }
+      #video-container {
+        right: 0;
+      }
+      #screen-container {
+        left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Bar: Main Controls -->
+    <div class="main-controls">
+      <button id="connect-button">Connect</button>
+      <button id="theme-toggle" class="material-symbols-outlined">light_mode</button>
+      <button id="config-toggle" class="material-symbols-outlined">settings</button>
+    </div>
+
+    <!-- Configuration Panel -->
+    <div id="config-container" class="hidden-mobile">
+      <div class="config-wrapper">
+        <div class="preset-sets">
+          <h3>Example Sets</h3>
+          <div class="preset-buttons">
+            <button class="preset-button" data-preset="friendly">
+              <span class="preset-name">Friendly Assistant</span>
+              <span class="preset-desc">Warm and helpful tone with Aoede's high pitch voice</span>
+            </button>
+            <button class="preset-button" data-preset="professional">
+              <span class="preset-name">Professional Expert</span>
+              <span class="preset-desc">Formal and precise with Charon's voice</span>
+            </button>
+            <button class="preset-button" data-preset="tired">
+              <span class="preset-name">Tired Assistant</span>
+              <span class="preset-desc">Tired and sleepy with Aoede's low pitch voice</span>
+            </button>
+          </div>
+        </div>
+
+        <select id="voice-select">
+          <option value="Puck">Puck (Male)</option>
+          <option value="Charon">Charon (Male)</option>
+          <option value="Kore">Kore (Female)</option>
+          <option value="Fenrir">Fenrir (Male)</option>
+          <option value="Aoede">Aoede (Female)</option>
+        </select>
+        <div class="sample-rate-container">
+          <input type="number" id="sample-rate-input" placeholder="Sample Rate (Hz)" min="8000" max="48000" step="1000" />
+          <span class="sample-rate-help">up for high pitch, down for low</span>
+        </div>
+        <textarea id="system-instruction" placeholder="Enter custom system instructions..." rows="3"></textarea>
+        <button id="apply-config">Apply Settings</button>
+      </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="chat-interface">
+      <!-- Chat History Logs -->
+      <div class="logs-wrapper">
+        <div class="logs-header">
+          <span>Chat History</span>
+          <button id="toggle-logs" class="material-symbols-outlined">expand_more</button>
+        </div>
+        <div id="logs-container">
+          <!-- Example log entries -->
+          <div class="log-entry system">System: Welcome to the Gemini API Client!</div>
+          <div class="log-entry user">User: Hello, how can I help?</div>
+          <div class="log-entry ai">AI: I’m here to assist you with any queries.</div>
+        </div>
+      </div>
+      <!-- Input Controls -->
+      <div class="input-controls">
+        <input type="text" id="message-input" placeholder="Enter message..." />
+        <div class="action-buttons">
+          <button id="send-button">Send</button>
+          <button id="mic-button">
+            <span id="mic-icon" class="material-symbols-outlined">mic</span>
+          </button>
+          <button id="camera-button">
+            <span id="camera-icon" class="material-symbols-outlined">videocam</span>
+          </button>
+          <button id="screen-button">
+            <span id="screen-icon" class="material-symbols-outlined">screen_share</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio Visualizers -->
+    <div class="audio-visualizers">
+      <div class="visualizer-container">
+        <label>Input Audio</label>
+        <div id="input-audio-visualizer">
+          <div class="audio-bar"></div>
+        </div>
+      </div>
+      <div class="visualizer-container">
+        <label>Output Audio</label>
+        <div id="audio-visualizer">
+          <div class="audio-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Preview Container -->
+    <div id="video-container" style="display: none;">
+      <video id="preview" playsinline autoplay muted></video>
+      <div class="video-controls">
+        <button id="stop-video">Stop Video</button>
+      </div>
+    </div>
+
+    <!-- Screen Preview Container -->
+    <div id="screen-container" style="display: none;">
+      <video id="screen-preview" playsinline autoplay muted></video>
+      <button class="close-button material-symbols-outlined">close</button>
+    </div>
+  </div>
+  <!-- Main JavaScript file (module) -->
+  <script src="js/main.js" type="module"></script>
+</body>
+</html>
